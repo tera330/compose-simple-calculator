@@ -80,7 +80,7 @@ class CalcuViewModel: ViewModel() {
     }
 
     fun calc() {
-        if (currentFormula != "0") {
+        if (currentFormula != "0" && currentFormula.last().isDigit()) {
             val numbers = currentFormula.split("+", "-", "×", "÷")
                 .map { it.toDouble() }.toMutableList()
             val operator = currentFormula.split("[0-9.]+".toRegex())
