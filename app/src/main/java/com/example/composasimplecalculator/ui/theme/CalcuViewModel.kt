@@ -14,19 +14,20 @@ class CalcuViewModel: ViewModel() {
 
     private var currentFormula: String = "0"
     private var currentResult: String = ""
+    private var oldNum: String = "0"
 
     fun addNum(inputNum: String) {
         if ((currentFormula == "0" && inputNum == "00")) {
             currentFormula = "0"
             currentResult = "=0"
+        } else if (inputNum == "00" && !currentFormula.last().isDigit() && currentFormula.first().toString() != "0" ) {
+            currentFormula += "0"
         } else if (currentFormula == "0") {
             currentFormula = inputNum
             currentResult = "=$inputNum"
         } else {
-            Log.d("result", "0の入力")
             currentFormula += inputNum
-            Log.d("result", "計算開始")
-            currentResult = "=${calc()}"
+            currentResult = calc()
         }
         updateState()
     }
@@ -37,7 +38,9 @@ class CalcuViewModel: ViewModel() {
 
         if (!lastNumber.contains(".") && currentFormula.last().isDigit()) {
             currentFormula += "."
-            currentResult += "."
+            if (!currentResult.contains(".")) {
+                currentResult += "."
+            }
         }
         updateState()
     }
@@ -51,6 +54,7 @@ class CalcuViewModel: ViewModel() {
 
     fun toPercentage() {
         if (currentFormula != "0") {
+
             val numbers = currentFormula.split("+", "-", "×", "÷")
                 .map { it.toDouble() }.toMutableList()
             val operator = currentFormula.split("[0-9.]+".toRegex())
@@ -58,13 +62,10 @@ class CalcuViewModel: ViewModel() {
 
             val lastNumber = numbers[numbers.size - 1]
             val percentageNum = (lastNumber * 0.01)
-            Log.d("resultList", numbers.toString())
 
             numbers[numbers.size - 1] = percentageNum
-            Log.d("resultList", numbers.toString())
 
             val combinedList = numbers.zip(operator) { a, b -> "$a$b" }
-            Log.d("resultList", combinedList.toString())
             currentFormula = combinedList.joinToString("") + numbers[numbers.size - 1]
         } else {
             currentFormula = "0"
@@ -80,10 +81,14 @@ class CalcuViewModel: ViewModel() {
     fun backSpace() {
         if (currentFormula.length > 1) {
             currentFormula = currentFormula.dropLast(1)
+            currentResult = calc()
+        } else if(!currentFormula.last().isDigit()) {
+            currentResult = oldNum
         } else {
+            Log.d("result", "else実行")
             currentFormula = "0"
         }
-        _calcUiState.value = CalcUiState(currentFormula)
+        updateState()
     }
 
     fun equal() {
@@ -92,8 +97,7 @@ class CalcuViewModel: ViewModel() {
         updateState()
     }
 
-    fun calc(): String {
-        Log.d("result", "calc関数の始まり")
+    private fun calc(): String {
         var result = "0"
 
         if (currentFormula != "0" && currentFormula.last().isDigit()) {
@@ -105,27 +109,24 @@ class CalcuViewModel: ViewModel() {
             Log.d("result", numbers.toString())
             Log.d("result", operator.toString())
 
-
             for (i in 0 until operator.size) {
-                Log.d("result", "for文開始")
                 if (operator[i] == "×") {
                     numbers[i + 1] = numbers[i] * numbers[i + 1]
-                    numbers[i] = 0.0
+                    numbers.removeAt(i)
                 } else if (operator[i] == "÷") {
                     if (numbers[i + 1] != 0.0) {
                         numbers[i + 1] = numbers[i] / numbers[i + 1] //i番目の演算子の右側を計算結果に更新
-                        numbers[i] = 0.0
+                        numbers.removeAt(i)
                     } else {
                         // 0で割ったときの処理。
                     }
                 }
             }
 
-            numbers.removeAll { it == 0.0 } //リストから０を消去
             operator.removeAll { it == "×" }
             operator.removeAll { it == "÷" } //リストから×と/を消去
 
-            if (operator.isNotEmpty()) { //通常時（掛け算・割り算が終わったとき）
+            if (operator.isNotEmpty() && numbers.isNotEmpty()) { //通常時（掛け算・割り算が終わったとき）
                 var tmp: Double
                 for (i in 0 until operator.size) {
                     if (operator[i] == "+") {
@@ -138,17 +139,30 @@ class CalcuViewModel: ViewModel() {
                     }
                 }
             }
+            if (numbers.isEmpty()) {
+                result = "0"
+            } else {
                 result = numbers[numbers.size - 1].toString()
+            }
         }
-        // _calcUiState.value = CalcUiState(currentFormula)
+        oldNum = currentFormula
         return result
     }
 
-    fun updateState() {
+    private fun updateState() {
+        Log.d("result", currentResult)
+
+        val a = currentResult.replace("=", "")
+        Log.d("result", a)
+
+        if (a.toDouble() % 1.0 == 0.0) {
+            currentResult = a.toDouble().toInt().toString()
+        }
+
         _calcUiState.update { currentState ->
             currentState.copy(
                 currentFormula = currentFormula,
-                currentResult = currentResult
+                currentResult = "=${currentResult}"
             )
         }
     }
