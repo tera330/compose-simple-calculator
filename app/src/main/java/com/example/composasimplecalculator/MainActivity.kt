@@ -85,6 +85,16 @@ fun AppScreen(
                 .padding(end = 20.dp, bottom = 5.dp)
         )
 
+        Text(
+            text = CalcUiState.currentResult,
+            textAlign = TextAlign.End,
+            maxLines= 1,
+            fontSize = 60.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 20.dp, bottom = 5.dp)
+        )
+
         Divider(
             // thickness = dimensionResource(R.dimen.thickness_divider),
             thickness = 1.dp,
@@ -143,7 +153,7 @@ fun ButtonLayout(modifier: Modifier = Modifier) {
                         modifier = Modifier,
                         onClick = {
                             when {
-                                i == 4 && index == 3 -> calcuViewModel.calc()
+                                i == 4 && index == 3 -> calcuViewModel.equal()
                                 i == 4 && index == 2 -> calcuViewModel.addDecimal()
                                 i == 0 && index == 0 -> calcuViewModel.allClear()
                                 i == 0 && index == 1 -> calcuViewModel.toPercentage()

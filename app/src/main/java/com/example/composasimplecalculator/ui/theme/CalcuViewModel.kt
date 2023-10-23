@@ -13,16 +13,22 @@ class CalcuViewModel: ViewModel() {
     val calcUiState: StateFlow<CalcUiState> = _calcUiState.asStateFlow()
 
     private var currentFormula: String = "0"
+    private var currentResult: String = ""
 
     fun addNum(inputNum: String) {
         if ((currentFormula == "0" && inputNum == "00")) {
             currentFormula = "0"
+            currentResult = "=0"
         } else if (currentFormula == "0") {
             currentFormula = inputNum
+            currentResult = "=$inputNum"
         } else {
+            Log.d("result", "0の入力")
             currentFormula += inputNum
+            Log.d("result", "計算開始")
+            currentResult = "=${calc()}"
         }
-        _calcUiState.value = CalcUiState(currentFormula)
+        updateState()
     }
 
     fun addDecimal() {
@@ -31,15 +37,16 @@ class CalcuViewModel: ViewModel() {
 
         if (!lastNumber.contains(".") && currentFormula.last().isDigit()) {
             currentFormula += "."
+            currentResult += "."
         }
-        _calcUiState.value = CalcUiState(currentFormula)
+        updateState()
     }
 
     fun addOperator(inputOperator: String) {
         if (currentFormula.isNotBlank() && currentFormula.last().isDigit()) {
             currentFormula += inputOperator
         }
-        _calcUiState.value = CalcUiState(currentFormula)
+        updateState()
     }
 
     fun toPercentage() {
@@ -79,7 +86,16 @@ class CalcuViewModel: ViewModel() {
         _calcUiState.value = CalcUiState(currentFormula)
     }
 
-    fun calc() {
+    fun equal() {
+        currentFormula = currentResult.replace("=", "")
+        currentResult = currentResult
+        updateState()
+    }
+
+    fun calc(): String {
+        Log.d("result", "calc関数の始まり")
+        var result = "0"
+
         if (currentFormula != "0" && currentFormula.last().isDigit()) {
             val numbers = currentFormula.split("+", "-", "×", "÷")
                 .map { it.toDouble() }.toMutableList()
@@ -87,9 +103,11 @@ class CalcuViewModel: ViewModel() {
                 .filter { it.isNotEmpty() }.toMutableList()
 
             Log.d("result", numbers.toString())
+            Log.d("result", operator.toString())
 
 
             for (i in 0 until operator.size) {
+                Log.d("result", "for文開始")
                 if (operator[i] == "×") {
                     numbers[i + 1] = numbers[i] * numbers[i + 1]
                     numbers[i] = 0.0
@@ -107,10 +125,6 @@ class CalcuViewModel: ViewModel() {
             operator.removeAll { it == "×" }
             operator.removeAll { it == "÷" } //リストから×と/を消去
 
-            if (operator.isEmpty()) { //演算子がすべて*と/だった場合
-                currentFormula = numbers[0].toString()
-            }
-
             if (operator.isNotEmpty()) { //通常時（掛け算・割り算が終わったとき）
                 var tmp: Double
                 for (i in 0 until operator.size) {
@@ -124,8 +138,18 @@ class CalcuViewModel: ViewModel() {
                     }
                 }
             }
-                currentFormula = numbers[numbers.size - 1].toString()
+                result = numbers[numbers.size - 1].toString()
         }
-        _calcUiState.value = CalcUiState(currentFormula)
+        // _calcUiState.value = CalcUiState(currentFormula)
+        return result
+    }
+
+    fun updateState() {
+        _calcUiState.update { currentState ->
+            currentState.copy(
+                currentFormula = currentFormula,
+                currentResult = currentResult
+            )
+        }
     }
 }
