@@ -18,7 +18,7 @@ class CalcViewModel: ViewModel() {
 
     private fun extractNumbersAndOperator(): Pair<MutableList<Double>, MutableList<String>> {
         val numbers = currentFormula.split("+", "-", "×", "÷")
-            .map { it.toDouble() }.toMutableList()
+            .filter { it.isNotEmpty() }.map { it.toDouble() }.toMutableList()
         val operator = currentFormula.split("[0-9.]+".toRegex())
             .filter { it.isNotEmpty() }.toMutableList()
         return Pair(numbers, operator)
@@ -89,6 +89,8 @@ class CalcViewModel: ViewModel() {
     }
 
     fun backSpace() {
+        Log.d("result", "ぅえ")
+
         if (currentFormula.length > 1) {
             currentFormula = currentFormula.dropLast(1)
 
@@ -129,9 +131,7 @@ class CalcViewModel: ViewModel() {
                 countList.add(i)
             } else if (operator[i] == "÷") {
                 if (numbers[i + 1] != 0.0) {
-                    Log.d("result", "true")
                     numbers[i + 1] = numbers[i] / numbers[i + 1] //i番目の演算子の右側を計算結果に更新
-                    Log.d("result", numbers[i + 1].toString())
                     countList.add(i)
                 } else {
                     // 0で割ったときの処理。
@@ -170,13 +170,23 @@ class CalcViewModel: ViewModel() {
             else {
                 numbers[numbers.size - 1].toString()
             }
+        zeroFlag = false
         return result
+    }
+
+    private fun isNumericWithDot(number: String): Boolean {
+        for (char in number) {
+            if (!(char.isDigit() || char == '.')) {
+                return false
+            }
+        }
+        return true
     }
 
     private fun updateState() {
         val a = currentResult.replace("=", "")
 
-        if (a != "0では割れません" && a.toDouble() % 1.0 == 0.0) {
+        if (isNumericWithDot(a) && a.toDouble() % 1.0 == 0.0) {
             currentResult = a.toDouble().toInt().toString()
         }
         _calcUiState.update { currentState ->
