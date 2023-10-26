@@ -25,6 +25,9 @@ class CalcViewModel: ViewModel() {
     }
 
     fun addNum(inputNum: String) {
+        val numbers = currentFormula.split("+", "-", "×", "÷")
+        val lastNumber = numbers[numbers.size - 1]
+
         if ((currentFormula == "0" && inputNum == "00")) {
             currentFormula = "0"
         } else if (inputNum == "00" && !currentFormula.last().isDigit() && currentFormula.first().toString() != "0") {
@@ -33,6 +36,8 @@ class CalcViewModel: ViewModel() {
         } else if (currentFormula == "0") {
             currentFormula = inputNum
             currentResult = inputNum
+        } else if(lastNumber == "0" && (inputNum == "0" || inputNum == "00")) {
+            currentFormula += ""
         } else {
             currentFormula += inputNum
             if (currentFormula != "0" && currentFormula.last().isDigit()) {
