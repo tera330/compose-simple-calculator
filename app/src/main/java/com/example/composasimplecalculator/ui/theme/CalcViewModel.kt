@@ -27,7 +27,6 @@ class CalcViewModel: ViewModel() {
     fun addNum(inputNum: String) {
         if ((currentFormula == "0" && inputNum == "00")) {
             currentFormula = "0"
-            currentResult = "0"
         } else if (inputNum == "00" && !currentFormula.last().isDigit() && currentFormula.first().toString() != "0") {
             currentFormula += "0"
             calc(extractNumbersAndOperator().first, extractNumbersAndOperator().second)
@@ -37,7 +36,8 @@ class CalcViewModel: ViewModel() {
         } else {
             currentFormula += inputNum
             if (currentFormula != "0" && currentFormula.last().isDigit()) {
-                currentResult = calc(extractNumbersAndOperator().first, extractNumbersAndOperator().second)
+                currentResult =
+                    calc(extractNumbersAndOperator().first, extractNumbersAndOperator().second)
             }
         }
         updateState()
@@ -59,12 +59,13 @@ class CalcViewModel: ViewModel() {
     fun addOperator(inputOperator: String) {
         if (currentFormula.isNotBlank() && currentFormula.last().isDigit()) {
             currentFormula += inputOperator
+            Log.d("result", currentFormula)
         }
         updateState()
     }
 
     fun toPercentage() {
-        if (currentFormula != "0") {
+        if (currentFormula.last().isDigit()) {
 
             val (numbers, operator) = extractNumbersAndOperator()
 
@@ -76,21 +77,17 @@ class CalcViewModel: ViewModel() {
             val combinedList = numbers.zip(operator) { a, b -> "$a$b" }
             currentFormula = combinedList.joinToString("") + numbers[numbers.size - 1]
             currentResult = calc(numbers, operator)
-        } else {
-            currentFormula = "0"
         }
         updateState()
     }
 
     fun allClear() {
         currentFormula = "0"
-        currentResult = "0"
-        _calcUiState.value = CalcUiState(currentFormula)
+        currentResult = ""
+        updateState()
     }
 
     fun backSpace() {
-        Log.d("result", "ぅえ")
-
         if (currentFormula.length > 1) {
             currentFormula = currentFormula.dropLast(1)
 
@@ -110,14 +107,16 @@ class CalcViewModel: ViewModel() {
             }
         } else {
             currentFormula = "0"
-            currentResult = "0"
+            currentResult = ""
         }
         updateState()
     }
 
     fun equal() {
-        if (currentResult != "0では割れません") {
-            currentFormula = currentResult
+        if (currentFormula == "0") {
+            currentResult = "0"
+        } else if (currentResult != "0では割れません") {
+            currentFormula = currentResult.replace("=", "")
         }
         updateState()
     }
@@ -141,8 +140,7 @@ class CalcViewModel: ViewModel() {
             }
         }
 
-        operator.removeAll { it == "×" }
-        operator.removeAll { it == "÷" } //リストから×と/を消去
+        operator.removeAll { it == "×" || it == "÷" } //リストから×と/を消去
 
         if (operator.isNotEmpty() && numbers.isNotEmpty()) { //通常時（掛け算・割り算が終わったとき）
             if (countList.isNotEmpty()) {
@@ -156,20 +154,19 @@ class CalcViewModel: ViewModel() {
                     tmp = (numbers[i] + numbers[i + 1])
                     numbers[i + 1] = tmp
 
-                    } else if (operator[i] == "-") {
-                        tmp = numbers[i] - numbers[i + 1]
-                        numbers[i + 1] = tmp
-                    }
+                } else if (operator[i] == "-") {
+                    tmp = numbers[i] - numbers[i + 1]
+                    numbers[i + 1] = tmp
                 }
             }
-            val result = if (numbers.isEmpty()) {
-                "0"
-            } else if(zeroFlag) {
-                "0では割れません"
-            }
-            else {
-                numbers[numbers.size - 1].toString()
-            }
+        }
+        val result = if (numbers.isEmpty()) {
+            "0"
+        } else if (zeroFlag) {
+            "0では割れません"
+        } else {
+            numbers[numbers.size - 1].toString()
+        }
         zeroFlag = false
         return result
     }
@@ -184,15 +181,18 @@ class CalcViewModel: ViewModel() {
     }
 
     private fun updateState() {
-        val a = currentResult.replace("=", "")
-
-        if (isNumericWithDot(a) && a.toDouble() % 1.0 == 0.0) {
-            currentResult = a.toDouble().toInt().toString()
+        if (currentResult == "") {
+            currentResult = ""
+        } else if (isNumericWithDot(currentResult) && currentResult.toDouble() % 1.0 == 0.0) {
+            currentResult = "=" + currentResult.toDouble().toInt().toString()
+        } else if (isNumericWithDot(currentResult)) {
+            currentResult = "=${currentResult}"
         }
+
         _calcUiState.update { currentState ->
             currentState.copy(
                 currentFormula = currentFormula,
-                currentResult = "=${currentResult}"
+                currentResult = currentResult
             )
         }
     }
