@@ -16,28 +16,28 @@ class CalcViewModel: ViewModel() {
     private var currentResult: String = ""
     private var zeroFlag = false
 
+    private fun extractNumbersAndOperator(): Pair<MutableList<Double>, MutableList<String>> {
+        val numbers = currentFormula.split("+", "-", "×", "÷")
+            .map { it.toDouble() }.toMutableList()
+        val operator = currentFormula.split("[0-9.]+".toRegex())
+            .filter { it.isNotEmpty() }.toMutableList()
+        return Pair(numbers, operator)
+    }
+
     fun addNum(inputNum: String) {
         if ((currentFormula == "0" && inputNum == "00")) {
             currentFormula = "0"
             currentResult = "0"
         } else if (inputNum == "00" && !currentFormula.last().isDigit() && currentFormula.first().toString() != "0") {
             currentFormula += "0"
-            val numbers = currentFormula.split("+", "-", "×", "÷")
-                .map { it.toDouble() }.toMutableList()
-            val operator = currentFormula.split("[0-9.]+".toRegex())
-                .filter { it.isNotEmpty() }.toMutableList()
-            calc(numbers, operator)
+            calc(extractNumbersAndOperator().first, extractNumbersAndOperator().second)
         } else if (currentFormula == "0") {
             currentFormula = inputNum
             currentResult = inputNum
         } else {
             currentFormula += inputNum
-            val numbers = currentFormula.split("+", "-", "×", "÷")
-                .map { it.toDouble() }.toMutableList()
-            val operator = currentFormula.split("[0-9.]+".toRegex())
-                .filter { it.isNotEmpty() }.toMutableList()
             if (currentFormula != "0" && currentFormula.last().isDigit()) {
-                currentResult = calc(numbers, operator)
+                currentResult = calc(extractNumbersAndOperator().first, extractNumbersAndOperator().second)
             }
         }
         updateState()
@@ -66,10 +66,7 @@ class CalcViewModel: ViewModel() {
     fun toPercentage() {
         if (currentFormula != "0") {
 
-            val numbers = currentFormula.split("+", "-", "×", "÷")
-                .map { it.toDouble() }.toMutableList()
-            val operator = currentFormula.split("[0-9.]+".toRegex())
-                .filter { it.isNotEmpty() }.toMutableList()
+            val (numbers, operator) = extractNumbersAndOperator()
 
             val lastNumber = numbers[numbers.size - 1]
             val percentageNum = (lastNumber * 0.01)
@@ -78,7 +75,7 @@ class CalcViewModel: ViewModel() {
 
             val combinedList = numbers.zip(operator) { a, b -> "$a$b" }
             currentFormula = combinedList.joinToString("") + numbers[numbers.size - 1]
-            //currentResult = combinedList.joinToString("") + numbers[numbers.size - 1]
+            currentResult = calc(numbers, operator)
         } else {
             currentFormula = "0"
         }
@@ -99,11 +96,7 @@ class CalcViewModel: ViewModel() {
                 zeroFlag = false
             }
 
-            val numbers = currentFormula.split("+", "-", "×", "÷")
-                .filter { it.isNotEmpty() }
-                .map { it.toDouble() }.toMutableList()
-            val operator = currentFormula.split("[0-9.]+".toRegex())
-                .filter { it.isNotEmpty() }.toMutableList()
+            val (numbers, operator) = extractNumbersAndOperator()
 
             currentResult = if (!currentFormula.last().isDigit()) {
 
