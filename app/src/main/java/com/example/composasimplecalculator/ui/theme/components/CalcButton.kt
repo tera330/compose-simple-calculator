@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun CalcButton(
     symbol: String,
-    color: ButtonColors,
+    buttonColor: ButtonColors,
     textColor: Color,
     modifier: Modifier,
     onClick: () -> Unit,
@@ -22,7 +22,7 @@ fun CalcButton(
     Button(
         onClick = { onClick() },
         shape = CircleShape,
-        colors = color,
+        colors = buttonColor,
         modifier = modifier
             .size(85.dp),
     ) {

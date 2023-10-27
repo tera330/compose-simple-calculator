@@ -30,9 +30,10 @@ class CalcViewModel: ViewModel() {
 
         if ((currentFormula == "0" && inputNum == "00")) {
             currentFormula = "0"
-        } else if (inputNum == "00" && !currentFormula.last().isDigit() && currentFormula.first().toString() != "0") {
+        } else if (inputNum == "00" && !currentFormula.last().isDigit() && currentFormula.first().toString() != "0") { /// todo ここ間違ってる。
+            Log.d("result", true.toString())
             currentFormula += "0"
-            calc(extractNumbersAndOperator().first, extractNumbersAndOperator().second)
+            currentResult = calc(extractNumbersAndOperator().first, extractNumbersAndOperator().second)
         } else if (currentFormula == "0") {
             currentFormula = inputNum
             currentResult = inputNum
@@ -103,8 +104,11 @@ class CalcViewModel: ViewModel() {
             val (numbers, operator) = extractNumbersAndOperator()
 
             currentResult = if (!currentFormula.last().isDigit()) {
+                Log.d("result", "記号やん")
 
-                operator.removeAt(operator.size - 1).map { it.toString() }.toMutableList()
+                if (operator.isNotEmpty()) {
+                    operator.removeAt(operator.size - 1).map { it.toString() }.toMutableList()
+                }
                 calc(numbers, operator)
 
             } else {

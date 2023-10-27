@@ -73,7 +73,7 @@ fun AppScreen(
             text = calcUiState.currentFormula,
             textAlign = TextAlign.End,
             maxLines= 1,
-            fontSize = 20.sp,
+            fontSize = 40.sp,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(end = 20.dp, bottom = 5.dp)
@@ -83,7 +83,7 @@ fun AppScreen(
             text = calcUiState.currentResult,
             textAlign = TextAlign.End,
             maxLines= 1,
-            fontSize = 20.sp,
+            fontSize = 40.sp,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(end = 20.dp, bottom = 5.dp)

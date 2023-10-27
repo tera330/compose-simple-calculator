@@ -15,7 +15,7 @@ import com.example.composasimplecalculator.ui.theme.CalcViewModel
 @Composable
 fun CalcButtonLayout(modifier: Modifier = Modifier) {
     val calcViewModel: CalcViewModel = viewModel()
-    val symbolList: List<String> = listOf( // todo modelとして定義する？
+    val symbolList: List<String> = listOf(
         "C", "%", "\u232B", "÷",
         "7", "8", "9", "×",
         "4", "5", "6", "-",
@@ -30,13 +30,11 @@ fun CalcButtonLayout(modifier: Modifier = Modifier) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp) // todo dpを別のファイルに定義
             ) {
-
                 symbolList.subList(i * 4, i * 4 + 4).forEachIndexed { index, symbol ->
                     val adjustedIndex = index + 1
                     val buttonColor: Color
                     val textColor: Color
 
-                    // ボタンカラーとテキストカラー
                     if (i == 4 && index == 3) {
                         buttonColor = Color(0xFF00F99A)
                         textColor = Color(0xFFFFFFFF)
@@ -50,7 +48,7 @@ fun CalcButtonLayout(modifier: Modifier = Modifier) {
 
                     CalcButton(
                         symbol = symbol,
-                        color = ButtonDefaults.buttonColors(buttonColor),
+                        buttonColor = ButtonDefaults.buttonColors(buttonColor),
                         textColor = textColor,
                         modifier = Modifier,
                         onClick = {
