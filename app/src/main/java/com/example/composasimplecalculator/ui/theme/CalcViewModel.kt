@@ -17,9 +17,9 @@ class CalcViewModel: ViewModel() {
     private var currentResult: String = ""
     private var zeroFlag = false
 
-    private fun extractNumbersAndOperator(): Pair<MutableList<Double>, MutableList<String>> {
+    private fun extractNumbersAndOperator(): Pair<MutableList<String>, MutableList<String>> {
         val numbers = currentFormula.split("+", "-", "×", "÷")
-            .filter { it.isNotEmpty() }.map { it.toDouble() }.toMutableList()
+            .filter { it.isNotEmpty() }.toMutableList()
         val operator = currentFormula.split("[0-9.]+".toRegex())
             .filter { it.isNotEmpty() }.toMutableList()
         return Pair(numbers, operator)
@@ -45,8 +45,7 @@ class CalcViewModel: ViewModel() {
         } else {
             currentFormula += inputNum
             if (currentFormula != "0" && currentFormula.last().isDigit()) {
-                currentResult =
-                    calc(extractNumbersAndOperator().first, extractNumbersAndOperator().second)
+                currentResult = calc(extractNumbersAndOperator().first, extractNumbersAndOperator().second)
             }
         }
         updateState()
@@ -79,13 +78,11 @@ class CalcViewModel: ViewModel() {
 
     fun toPercentage() {
         if (currentFormula.last().isDigit()) {
-
             val (numbers, operator) = extractNumbersAndOperator()
-
             val lastNumber = numbers[numbers.size - 1]
-            val percentageNum = (lastNumber * 0.01)
+            val percentageNum = (lastNumber.toDouble() * 0.01)
 
-            numbers[numbers.size - 1] = percentageNum
+            numbers[numbers.size - 1] = percentageNum.toString()
 
             val combinedList = numbers.zip(operator) { a, b -> "$a$b" }
             currentFormula = combinedList.joinToString("") + numbers[numbers.size - 1]
@@ -103,21 +100,15 @@ class CalcViewModel: ViewModel() {
     fun backSpace() {
         if (currentFormula.length > 1) {
             currentFormula = currentFormula.dropLast(1)
-
             if (!currentFormula.contains("0÷")) {
                 zeroFlag = false
             }
-
             val (numbers, operator) = extractNumbersAndOperator()
-
             currentResult = if (!currentFormula.last().isDigit()) {
-                Log.d("result", "記号やん")
-
                 if (operator.isNotEmpty()) {
                     operator.removeAt(operator.size - 1).map { it.toString() }.toMutableList()
                 }
                 calc(numbers, operator)
-
             } else {
                 calc(numbers, operator)
             }
@@ -137,16 +128,25 @@ class CalcViewModel: ViewModel() {
         updateState()
     }
 
-    private fun calc(numbers: MutableList<Double>, operator: MutableList<String>): String {
+    private fun intOrDouble(num: String): Number {
+        val result = if (num.toDouble() % 1 == 1.0) {
+            num.toInt()
+        } else {
+            num.toDouble()
+        }
+        return result
+    }
+
+    private fun calc(numbers: MutableList<String>, operator: MutableList<String>): String {
         val countList = mutableListOf<Int>()
 
         for (i in 0 until operator.size) {
             if (operator[i] == "×") {
-                numbers[i + 1] = numbers[i] * numbers[i + 1]
+                numbers[i + 1] = (numbers[i].toDouble() * numbers[i + 1].toDouble()).toString()
                 countList.add(i)
             } else if (operator[i] == "÷") {
-                if (numbers[i + 1] != 0.0) {
-                    numbers[i + 1] = numbers[i] / numbers[i + 1] //i番目の演算子の右側を計算結果に更新
+                if (numbers[i + 1].toDouble() != 0.0) {
+                    numbers[i + 1] = (numbers[i].toDouble() / numbers[i + 1].toDouble()).toString() //i番目の演算子の右側を計算結果に更新
                     countList.add(i)
                 } else {
                     // 0で割ったときの処理。
@@ -164,14 +164,14 @@ class CalcViewModel: ViewModel() {
                     numbers.removeAt(it)
                 }
             }
-            var tmp: Double
+            var tmp: String
             for (i in 0 until operator.size) {
                 if (operator[i] == "+") {
-                    tmp = (numbers[i] + numbers[i + 1])
+                    tmp = (numbers[i].toDouble() + numbers[i + 1].toDouble()).toString()
                     numbers[i + 1] = tmp
 
                 } else if (operator[i] == "-") {
-                    tmp = numbers[i] - numbers[i + 1]
+                    tmp = (numbers[i].toDouble() - numbers[i + 1].toDouble()).toString()
                     numbers[i + 1] = tmp
                 }
             }
