@@ -36,11 +36,11 @@ fun CalcButtonLayout(modifier: Modifier = Modifier) {
                     val textColor: Color
 
                     if (i == 4 && index == 3) {
-                        buttonColor = Color(0xFF00F99A)
+                        buttonColor = Color(0xff6a7dff)
                         textColor = Color(0xFFFFFFFF)
                     } else if (adjustedIndex % 4 == 0) {
                         buttonColor = Color(0xFFFFFFFF)
-                        textColor = Color(0xFF00F99A)
+                        textColor = Color(0xff6a7dff)
                     } else {
                         buttonColor = Color(0xFFFFFFFF)
                         textColor = Color(0xFF000000)
