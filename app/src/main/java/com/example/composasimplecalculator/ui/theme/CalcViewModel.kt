@@ -15,7 +15,7 @@ class CalcViewModel: ViewModel() {
 
     private var currentFormula: String = "0"
     private var currentResult: String = ""
-    private var zeroFlag = false
+    private var divisionByZeroFlag = false
 
     private fun extractNumbersAndOperator(): Pair<MutableList<String>, MutableList<String>> {
         val numbers = currentFormula.split("+", "-", "×", "÷")
@@ -26,14 +26,16 @@ class CalcViewModel: ViewModel() {
     }
 
     fun addNum(inputNum: String) {
-        // todo 01の入力を1にする
-        // todo 1.0(小数点を挟んでinputが00の時)のエラーを直し、1.00を表示する。
-        // todo 演算子を挟んだ右側の数値の連続した０を無効にする　例1 + 000
+        // 01の入力を1にする
+        // 1.0(小数点を挟んでinputが00の時)のエラーを直し、1.00を表示する。
+        // 演算子を挟んだ右側の数値の連続した０を無効にする　例1 + 000
 
         if ((currentFormula == "0" && inputNum == "00")) {
             currentFormula = "0"
         } else if (inputNum == "00") {
-            if (currentFormula.last() == '.' || currentFormula.last().isDigit()) {
+            if (extractNumbersAndOperator().first.last() == "0" &&  currentFormula.last() == '0') {
+                currentFormula += ""
+            } else if (currentFormula.last() == '.' || currentFormula.last().isDigit()) {
                 currentFormula += "00"
             } else if (!currentFormula.last().isDigit()) {
                 currentFormula += "0"
@@ -43,9 +45,17 @@ class CalcViewModel: ViewModel() {
             currentFormula = inputNum
             currentResult = inputNum
         } else {
-            currentFormula += inputNum
-            if (currentFormula != "0" && currentFormula.last().isDigit()) {
-                currentResult = calc(extractNumbersAndOperator().first, extractNumbersAndOperator().second)
+            if (currentFormula.last() == '0' && extractNumbersAndOperator().first.last() == "0") {
+                val (numbers, operator) = extractNumbersAndOperator()
+                numbers[numbers.size - 1] = inputNum
+                val combinedList = numbers.zip(operator) { a, b -> "$a$b" }
+                currentFormula = combinedList.joinToString("") + numbers[numbers.size - 1]
+                currentResult = calc(numbers, operator)
+            } else {
+                currentFormula += inputNum
+                if (currentFormula != "0" && currentFormula.last().isDigit()) {
+                    currentResult = calc(extractNumbersAndOperator().first, extractNumbersAndOperator().second)
+                }
             }
         }
         updateState()
@@ -71,7 +81,6 @@ class CalcViewModel: ViewModel() {
     fun addOperator(inputOperator: String) {
         if (currentFormula.isNotBlank() && currentFormula.last().isDigit()) {
             currentFormula += inputOperator
-            Log.d("result", currentFormula)
         }
         updateState()
     }
@@ -101,7 +110,7 @@ class CalcViewModel: ViewModel() {
         if (currentFormula.length > 1) {
             currentFormula = currentFormula.dropLast(1)
             if (!currentFormula.contains("0÷")) {
-                zeroFlag = false
+                divisionByZeroFlag = false
             }
             val (numbers, operator) = extractNumbersAndOperator()
             currentResult = if (!currentFormula.last().isDigit()) {
@@ -128,15 +137,6 @@ class CalcViewModel: ViewModel() {
         updateState()
     }
 
-    private fun intOrDouble(num: String): Number {
-        val result = if (num.toDouble() % 1 == 1.0) {
-            num.toInt()
-        } else {
-            num.toDouble()
-        }
-        return result
-    }
-
     private fun calc(numbers: MutableList<String>, operator: MutableList<String>): String {
         val countList = mutableListOf<Int>()
 
@@ -151,10 +151,12 @@ class CalcViewModel: ViewModel() {
                 } else {
                     // 0で割ったときの処理。
                     currentResult = "0で割れません。"
-                    zeroFlag = true
+                    divisionByZeroFlag = true
                 }
             }
         }
+
+        Log.d("result", numbers.toString() + "数")
 
         operator.removeAll { it == "×" || it == "÷" } //リストから×と/を消去
 
@@ -167,7 +169,9 @@ class CalcViewModel: ViewModel() {
             var tmp: String
             for (i in 0 until operator.size) {
                 if (operator[i] == "+") {
+                    Log.d("result", "ここ")
                     tmp = (numbers[i].toDouble() + numbers[i + 1].toDouble()).toString()
+                    Log.d("result", "ここdada")
                     numbers[i + 1] = tmp
 
                 } else if (operator[i] == "-") {
@@ -178,16 +182,16 @@ class CalcViewModel: ViewModel() {
         }
         val result = if (numbers.isEmpty()) {
             "0"
-        } else if (zeroFlag) {
+        } else if (divisionByZeroFlag) {
             "0では割れません"
         } else {
             numbers[numbers.size - 1].toString()
         }
-        zeroFlag = false
+        divisionByZeroFlag = false
         return result
     }
 
-    private fun isNumericWithDot(number: String): Boolean {
+    private fun isNumericWithDot(number: String): Boolean { // 引数が数字と小数点だけの文字列ならばfalse
         for (char in number) {
             if (!(char.isDigit() || char == '.')) {
                 return false
