@@ -1,7 +1,5 @@
 package com.example.composasimplecalculator.ui.theme
 
-import android.util.Log
-import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,44 +15,40 @@ class CalcViewModel: ViewModel() {
     private var currentResult: String = ""
     private var divisionByZeroFlag = false
 
-    private fun extractNumbersAndOperator(): Pair<MutableList<String>, MutableList<String>> {
+    private fun extractNumbersAndOperators(): Pair<MutableList<String>, MutableList<String>> {
         val numbers = currentFormula.split("+", "-", "×", "÷")
             .filter { it.isNotEmpty() }.toMutableList()
-        val operator = currentFormula.split("[0-9.]+".toRegex())
+        val operators = currentFormula.split("[0-9.]+".toRegex())
             .filter { it.isNotEmpty() }.toMutableList()
-        return Pair(numbers, operator)
+        return Pair(numbers, operators)
     }
 
     fun addNum(inputNum: String) {
-        // 01の入力を1にする
-        // 1.0(小数点を挟んでinputが00の時)のエラーを直し、1.00を表示する。
-        // 演算子を挟んだ右側の数値の連続した０を無効にする　例1 + 000
-
         if ((currentFormula == "0" && inputNum == "00")) {
             currentFormula = "0"
         } else if (inputNum == "00") {
-            if (extractNumbersAndOperator().first.last() == "0" &&  currentFormula.last() == '0') {
+            if (extractNumbersAndOperators().first.last() == "0" &&  currentFormula.last() == '0') {
                 currentFormula += ""
             } else if (currentFormula.last() == '.' || currentFormula.last().isDigit()) {
                 currentFormula += "00"
             } else if (!currentFormula.last().isDigit()) {
                 currentFormula += "0"
             }
-            currentResult = calc(extractNumbersAndOperator().first, extractNumbersAndOperator().second)
+            currentResult = calc(extractNumbersAndOperators().first, extractNumbersAndOperators().second)
         } else if (currentFormula == "0") {
             currentFormula = inputNum
             currentResult = inputNum
         } else {
-            if (currentFormula.last() == '0' && extractNumbersAndOperator().first.last() == "0") {
-                val (numbers, operator) = extractNumbersAndOperator()
+            if (currentFormula.last() == '0' && extractNumbersAndOperators().first.last() == "0") {
+                val (numbers, operators) = extractNumbersAndOperators()
                 numbers[numbers.size - 1] = inputNum
-                val combinedList = numbers.zip(operator) { a, b -> "$a$b" }
+                val combinedList = numbers.zip(operators) { a, b -> "$a$b" }
                 currentFormula = combinedList.joinToString("") + numbers[numbers.size - 1]
-                currentResult = calc(numbers, operator)
+                currentResult = calc(numbers, operators)
             } else {
                 currentFormula += inputNum
                 if (currentFormula != "0" && currentFormula.last().isDigit()) {
-                    currentResult = calc(extractNumbersAndOperator().first, extractNumbersAndOperator().second)
+                    currentResult = calc(extractNumbersAndOperators().first, extractNumbersAndOperators().second)
                 }
             }
         }
@@ -63,7 +57,7 @@ class CalcViewModel: ViewModel() {
 
     fun addDecimal() {
         if (currentFormula != "0") {
-            val numbers = currentFormula.split("+", "-", "×", "÷")
+            val numbers = currentFormula.split("+", "-", "×", "÷") // todo ここ直せる
             val lastNumber = numbers[numbers.size - 1]
 
             if (!lastNumber.contains(".") && currentFormula.last().isDigit()) {
@@ -87,15 +81,15 @@ class CalcViewModel: ViewModel() {
 
     fun toPercentage() {
         if (currentFormula.last().isDigit()) {
-            val (numbers, operator) = extractNumbersAndOperator()
+            val (numbers, operators) = extractNumbersAndOperators()
             val lastNumber = numbers[numbers.size - 1]
             val percentageNum = (lastNumber.toDouble() * 0.01)
 
             numbers[numbers.size - 1] = percentageNum.toString()
 
-            val combinedList = numbers.zip(operator) { a, b -> "$a$b" }
+            val combinedList = numbers.zip(operators) { a, b -> "$a$b" } // 変更したnumberと
             currentFormula = combinedList.joinToString("") + numbers[numbers.size - 1]
-            currentResult = calc(numbers, operator)
+            currentResult = calc(numbers, operators)
         }
         updateState()
     }
@@ -112,14 +106,14 @@ class CalcViewModel: ViewModel() {
             if (!currentFormula.contains("0÷")) {
                 divisionByZeroFlag = false
             }
-            val (numbers, operator) = extractNumbersAndOperator()
+            val (numbers, operators) = extractNumbersAndOperators()
             currentResult = if (!currentFormula.last().isDigit()) {
-                if (operator.isNotEmpty()) {
-                    operator.removeAt(operator.size - 1).map { it.toString() }.toMutableList()
+                if (operators.isNotEmpty()) {
+                    operators.removeAt(operators.size - 1).map { it.toString() }.toMutableList()
                 }
-                calc(numbers, operator)
+                calc(numbers, operators)
             } else {
-                calc(numbers, operator)
+                calc(numbers, operators)
             }
         } else {
             currentFormula = "0"
@@ -137,17 +131,17 @@ class CalcViewModel: ViewModel() {
         updateState()
     }
 
-    private fun calc(numbers: MutableList<String>, operator: MutableList<String>): String {
-        val countList = mutableListOf<Int>()
+    private fun calc(numbers: MutableList<String>, operators: MutableList<String>): String {
+        val unusedIndex = mutableListOf<Int>() // 計算が終わり使わなくなったnumbers要素のインデックスを記録
 
-        for (i in 0 until operator.size) {
-            if (operator[i] == "×") {
+        for (i in 0 until operators.size) {
+            if (operators[i] == "×") {
                 numbers[i + 1] = (numbers[i].toDouble() * numbers[i + 1].toDouble()).toString()
-                countList.add(i)
-            } else if (operator[i] == "÷") {
+                unusedIndex.add(i)
+            } else if (operators[i] == "÷") {
                 if (numbers[i + 1].toDouble() != 0.0) {
                     numbers[i + 1] = (numbers[i].toDouble() / numbers[i + 1].toDouble()).toString() //i番目の演算子の右側を計算結果に更新
-                    countList.add(i)
+                    unusedIndex.add(i)
                 } else {
                     // 0で割ったときの処理。
                     currentResult = "0で割れません。"
@@ -156,42 +150,36 @@ class CalcViewModel: ViewModel() {
             }
         }
 
-        Log.d("result", numbers.toString() + "数")
+        operators.removeAll { it == "×" || it == "÷" } // operatorsから×と/を消去（掛け算と割り算が終了）
 
-        operator.removeAll { it == "×" || it == "÷" } //リストから×と/を消去
-
-        if (operator.isNotEmpty() && numbers.isNotEmpty()) { //通常時（掛け算・割り算が終わったとき）
-            if (countList.isNotEmpty()) {
-                countList.sortedDescending().forEach {
+        if (operators.isNotEmpty() && numbers.isNotEmpty()) {
+            if (unusedIndex.isNotEmpty()) {
+                unusedIndex.sortedDescending().forEach {
                     numbers.removeAt(it)
                 }
             }
-            var tmp: String
-            for (i in 0 until operator.size) {
-                if (operator[i] == "+") {
-                    Log.d("result", "ここ")
-                    tmp = (numbers[i].toDouble() + numbers[i + 1].toDouble()).toString()
-                    Log.d("result", "ここdada")
-                    numbers[i + 1] = tmp
+            for (i in 0 until operators.size) {
+                if (operators[i] == "+") {
+                    numbers[i + 1] =  (numbers[i].toDouble() + numbers[i + 1].toDouble()).toString()
 
-                } else if (operator[i] == "-") {
-                    tmp = (numbers[i].toDouble() - numbers[i + 1].toDouble()).toString()
-                    numbers[i + 1] = tmp
+                } else if (operators[i] == "-") {
+                    numbers[i + 1] = (numbers[i].toDouble() - numbers[i + 1].toDouble()).toString()
                 }
             }
         }
-        val result = if (numbers.isEmpty()) {
+
+        val calcResult = if (numbers.isEmpty()) {
             "0"
         } else if (divisionByZeroFlag) {
             "0では割れません"
         } else {
-            numbers[numbers.size - 1].toString()
+            numbers[numbers.size - 1]
         }
         divisionByZeroFlag = false
-        return result
+        return calcResult
     }
 
-    private fun isNumericWithDot(number: String): Boolean { // 引数が数字と小数点だけの文字列ならばfalse
+    private fun isNumericWithDot(number: String): Boolean { // 数字or小数点からなる文字列ならばtrue
         for (char in number) {
             if (!(char.isDigit() || char == '.')) {
                 return false

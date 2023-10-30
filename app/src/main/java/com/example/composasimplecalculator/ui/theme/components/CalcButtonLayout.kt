@@ -25,11 +25,11 @@ fun CalcButtonLayout(modifier: Modifier = Modifier) {
     )
     Column(
         modifier = Modifier.padding(bottom = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp) // todo dpを別のファイルに定義
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         for (numberOfRows in 0 until 5) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp) // todo dpを別のファイルに定義
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 symbolList.subList(numberOfRows * 4, numberOfRows * 4 + 4).forEachIndexed { index, symbol ->
                     val adjustedIndex = index + 1
