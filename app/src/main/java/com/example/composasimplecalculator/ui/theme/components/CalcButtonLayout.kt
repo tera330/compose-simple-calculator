@@ -8,6 +8,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.composasimplecalculator.ui.theme.CalcViewModel
@@ -26,24 +27,24 @@ fun CalcButtonLayout(modifier: Modifier = Modifier) {
         modifier = Modifier.padding(bottom = 10.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp) // todo dpを別のファイルに定義
     ) {
-        for (i in 0 until 5) {
+        for (numberOfRows in 0 until 5) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp) // todo dpを別のファイルに定義
             ) {
-                symbolList.subList(i * 4, i * 4 + 4).forEachIndexed { index, symbol ->
+                symbolList.subList(numberOfRows * 4, numberOfRows * 4 + 4).forEachIndexed { index, symbol ->
                     val adjustedIndex = index + 1
                     val buttonColor: Color
                     val textColor: Color
 
-                    if (i == 4 && index == 3) {
+                    if (numberOfRows == 4 && index == 3) {
                         buttonColor = Color(0xff6a7dff)
-                        textColor = Color(0xFFFFFFFF)
+                        textColor = Color(0xffffffff)
                     } else if (adjustedIndex % 4 == 0) {
-                        buttonColor = Color(0xFFFFFFFF)
+                        buttonColor = Color(0xffffffff)
                         textColor = Color(0xff6a7dff)
                     } else {
-                        buttonColor = Color(0xFFFFFFFF)
-                        textColor = Color(0xFF000000)
+                        buttonColor = Color(0xffffffff)
+                        textColor = Color(0xff000000)
                     }
 
                     CalcButton(
@@ -53,11 +54,11 @@ fun CalcButtonLayout(modifier: Modifier = Modifier) {
                         modifier = Modifier,
                         onClick = {
                             when {
-                                i == 4 && index == 3 -> calcViewModel.equal()
-                                i == 4 && index == 2 -> calcViewModel.addDecimal()
-                                i == 0 && index == 0 -> calcViewModel.allClear()
-                                i == 0 && index == 1 -> calcViewModel.toPercentage()
-                                i == 0 && index == 2 -> calcViewModel.backSpace()
+                                numberOfRows == 4 && index == 3 -> calcViewModel.equal()
+                                numberOfRows == 4 && index == 2 -> calcViewModel.addDecimal()
+                                numberOfRows == 0 && index == 0 -> calcViewModel.allClear()
+                                numberOfRows == 0 && index == 1 -> calcViewModel.toPercentage()
+                                numberOfRows == 0 && index == 2 -> calcViewModel.backSpace()
                                 adjustedIndex % 4 == 0 -> calcViewModel.addOperator(symbol)
                                 else -> calcViewModel.addNum(symbol)
                             }
@@ -67,4 +68,10 @@ fun CalcButtonLayout(modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewCalcButtonLayout() {
+    CalcButtonLayout()
 }
