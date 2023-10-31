@@ -1,5 +1,6 @@
 package com.example.composasimplecalculator.ui.theme
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,9 +25,7 @@ class CalcViewModel: ViewModel() {
     }
 
     fun addNum(inputNum: String) {
-        if ((currentFormula == "0" && inputNum == "00")) {
-            currentFormula = "0"
-        } else if (inputNum == "00") {
+        if (inputNum == "00") {
             if (extractNumbersAndOperators().first.last() == "0" &&  currentFormula.last() == '0') {
                 currentFormula += ""
             } else if (currentFormula.last() == '.' || currentFormula.last().isDigit()) {
@@ -42,14 +41,12 @@ class CalcViewModel: ViewModel() {
             if (currentFormula.last() == '0' && extractNumbersAndOperators().first.last() == "0") {
                 val (numbers, operators) = extractNumbersAndOperators()
                 numbers[numbers.size - 1] = inputNum
-                val combinedList = numbers.zip(operators) { a, b -> "$a$b" }
+                val combinedList = numbers.zip(operators) { a, b -> "$a$b" } // 変更後のnumbersとoperatorの組み合わせ
                 currentFormula = combinedList.joinToString("") + numbers[numbers.size - 1]
                 currentResult = calc(numbers, operators)
             } else {
                 currentFormula += inputNum
-                if (currentFormula != "0" && currentFormula.last().isDigit()) {
-                    currentResult = calc(extractNumbersAndOperators().first, extractNumbersAndOperators().second)
-                }
+                currentResult = calc(extractNumbersAndOperators().first, extractNumbersAndOperators().second)
             }
         }
         updateState()
@@ -57,14 +54,12 @@ class CalcViewModel: ViewModel() {
 
     fun addDecimal() {
         if (currentFormula != "0") {
-            val numbers = currentFormula.split("+", "-", "×", "÷") // todo ここ直せる
+            val numbers = extractNumbersAndOperators().first
             val lastNumber = numbers[numbers.size - 1]
 
             if (!lastNumber.contains(".") && currentFormula.last().isDigit()) {
                 currentFormula += "."
-                if (!currentResult.contains(".")) {
-                    currentResult += "."
-                }
+                currentResult += "."
             }
         } else {
             currentFormula += "."
@@ -87,7 +82,7 @@ class CalcViewModel: ViewModel() {
 
             numbers[numbers.size - 1] = percentageNum.toString()
 
-            val combinedList = numbers.zip(operators) { a, b -> "$a$b" } // 変更したnumberと
+            val combinedList = numbers.zip(operators) { a, b -> "$a$b" } // 変更後のnumbersとoperatorの組み合わせ
             currentFormula = combinedList.joinToString("") + numbers[numbers.size - 1]
             currentResult = calc(numbers, operators)
         }
@@ -103,9 +98,7 @@ class CalcViewModel: ViewModel() {
     fun backSpace() {
         if (currentFormula.length > 1) {
             currentFormula = currentFormula.dropLast(1)
-            if (!currentFormula.contains("0÷")) {
-                divisionByZeroFlag = false
-            }
+
             val (numbers, operators) = extractNumbersAndOperators()
             currentResult = if (!currentFormula.last().isDigit()) {
                 if (operators.isNotEmpty()) {
@@ -125,7 +118,7 @@ class CalcViewModel: ViewModel() {
     fun equal() {
         if (currentFormula == "0") {
             currentResult = "0"
-        } else if (currentResult != "0では割れません") {
+        } else {
             currentFormula = currentResult.replace("=", "")
         }
         updateState()
@@ -140,7 +133,7 @@ class CalcViewModel: ViewModel() {
                 unusedIndex.add(i)
             } else if (operators[i] == "÷") {
                 if (numbers[i + 1].toDouble() != 0.0) {
-                    numbers[i + 1] = (numbers[i].toDouble() / numbers[i + 1].toDouble()).toString() //i番目の演算子の右側を計算結果に更新
+                    numbers[i + 1] = (numbers[i].toDouble() / numbers[i + 1].toDouble()).toString()
                     unusedIndex.add(i)
                 } else {
                     // 0で割ったときの処理。
