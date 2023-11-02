@@ -1,6 +1,5 @@
 package com.example.composasimplecalculator.ui.theme
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -79,10 +78,9 @@ class CalcViewModel: ViewModel() {
             val (numbers, operators) = extractNumbersAndOperators()
             val lastNumber = numbers[numbers.size - 1]
             val percentageNum = (lastNumber.toDouble() * 0.01)
-
             numbers[numbers.size - 1] = percentageNum.toString()
-
             val combinedList = numbers.zip(operators) { a, b -> "$a$b" } // 変更後のnumbersとoperatorの組み合わせ
+
             currentFormula = combinedList.joinToString("") + numbers[numbers.size - 1]
             currentResult = calc(numbers, operators)
         }

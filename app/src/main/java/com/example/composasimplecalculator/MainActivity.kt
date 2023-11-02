@@ -4,12 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,7 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.composasimplecalculator.ui.theme.CalcViewModel
 import com.example.composasimplecalculator.ui.theme.ComposaSimpleCalculatorTheme
-import com.example.composasimplecalculator.ui.theme.components.CalcButtonLayout
+import com.example.composasimplecalculator.ui.theme.screenparts.CalcButtonLayout
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,34 +67,33 @@ fun AppScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFFFFFFF)),
+            .background(Color(0xffffffff)),
     ) {
         Spacer(modifier = Modifier.weight(1f))
-        
-        Text(
-            text = calcUiState.currentFormula,
-            textAlign = TextAlign.End,
-            maxLines= 1,
-            fontSize = 40.sp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 20.dp, bottom = 5.dp)
-        )
-
-        Text(
-            text = calcUiState.currentResult,
-            textAlign = TextAlign.End,
-            maxLines= 1,
-            fontSize = 40.sp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 20.dp, bottom = 5.dp)
-        )
-
+        Column {
+            Text(
+                text = calcUiState.currentFormula,
+                textAlign = TextAlign.End,
+                maxLines = 1,
+                fontSize = 40.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 20.dp, bottom = 5.dp)
+                    .horizontalScroll(rememberScrollState())
+            )
+            Text(
+                text = calcUiState.currentResult,
+                textAlign = TextAlign.End,
+                maxLines = 1,
+                fontSize = 40.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 20.dp, bottom = 5.dp)
+                    .horizontalScroll(rememberScrollState())
+            )
+        }
         Divider(
-            // thickness = dimensionResource(R.dimen.thickness_divider),
             thickness = 1.dp,
-            // modifier = Modifier.padding(bottom = dimensionResource(R.dimen.padding_medium))
             modifier = Modifier
                 .width(350.dp)
         )

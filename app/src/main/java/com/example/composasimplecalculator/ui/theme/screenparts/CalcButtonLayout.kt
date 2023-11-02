@@ -1,4 +1,4 @@
-package com.example.composasimplecalculator.ui.theme.components
+package com.example.composasimplecalculator.ui.theme.screenparts
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
