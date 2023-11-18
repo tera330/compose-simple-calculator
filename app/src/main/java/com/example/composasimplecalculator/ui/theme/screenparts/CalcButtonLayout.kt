@@ -1,5 +1,6 @@
 package com.example.composasimplecalculator.ui.theme.screenparts
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,13 +39,13 @@ fun CalcButtonLayout(modifier: Modifier = Modifier) {
 
                     if (numberOfRows == 4 && index == 3) {
                         buttonColor = Color(0xff6a7dff)
-                        textColor = Color(0xffffffff)
+                        textColor = if (isSystemInDarkTheme()) Color(0xffc4c5dd) else Color(0xffffffff)
                     } else if (adjustedIndex % 4 == 0) {
-                        buttonColor = Color(0xffffffff)
+                        buttonColor = if(isSystemInDarkTheme()) Color(0xff434559) else Color(0xffffffff)
                         textColor = Color(0xff6a7dff)
                     } else {
-                        buttonColor = Color(0xffffffff)
-                        textColor = Color(0xff000000)
+                        buttonColor = if(isSystemInDarkTheme()) Color(0xff434559) else Color(0xffffffff)
+                        textColor = if (isSystemInDarkTheme()) Color(0xffc4c5dd) else Color(0xff000000)
                     }
 
                     CalcButton(

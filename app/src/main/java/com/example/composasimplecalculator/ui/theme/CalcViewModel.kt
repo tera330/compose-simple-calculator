@@ -97,9 +97,12 @@ class CalcViewModel: ViewModel() {
     fun backSpace() {
         if (currentFormula.length > 1) {
             currentFormula = currentFormula.dropLast(1)
-
             val (numbers, operators) = extractNumbersAndOperators()
-            currentResult = if (!currentFormula.last().isDigit()) {
+
+            currentResult = if (currentFormula.last().toString() == ".") {
+                numbers.toString().substring(0, numbers.toString().length - 1)
+                calc(numbers, operators)
+            } else if (!currentFormula.last().isDigit()) {
                 if (operators.isNotEmpty()) {
                     operators.removeAt(operators.size - 1).map { it.toString() }.toMutableList()
                 }

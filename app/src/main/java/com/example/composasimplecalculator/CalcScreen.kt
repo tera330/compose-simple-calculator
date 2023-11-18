@@ -2,6 +2,7 @@ package com.example.composasimplecalculator
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,12 +39,13 @@ fun CalcScreen(
     calcViewModel: CalcViewModel = viewModel(),
 ) {
     val calcUiState by calcViewModel.calcUiState.collectAsState()
+    val screenBackgroundColor = if(isSystemInDarkTheme()) Color(0xff2d2f42) else Color(0xffffffff)
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xffffffff)),
+            .background(screenBackgroundColor),
     ) {
         Spacer(modifier = Modifier.weight(1f))
         Column {
@@ -52,6 +54,11 @@ fun CalcScreen(
                 textAlign = TextAlign.End,
                 maxLines = 1,
                 fontSize = 40.sp,
+                color = if (isSystemInDarkTheme()) {
+                    Color(0xffc4c5dd)
+                } else {
+                    Color(0xff000000)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(end = 20.dp, bottom = 5.dp)
@@ -62,6 +69,11 @@ fun CalcScreen(
                 textAlign = TextAlign.End,
                 maxLines = 1,
                 fontSize = 40.sp,
+                color = if (isSystemInDarkTheme()) {
+                    Color(0xffc4c5dd)
+                } else {
+                    Color(0xff000000)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(end = 20.dp, bottom = 5.dp)
@@ -72,6 +84,7 @@ fun CalcScreen(
             thickness = 1.dp,
             modifier = Modifier
                 .width(350.dp)
+                .padding(15.dp)
         )
         CalcButtonLayout(
             modifier = Modifier.padding(
